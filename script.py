@@ -29,6 +29,7 @@ for filename in os.listdir(source_dir):
     file_ext = os.path.splitext(filename)[1].lower()
 
     #ตรวจสอบและย้ายไฟล์
+    moved = False   
     for folder, ext_list in file_types.items():
         if file_ext in ext_list:
             # สร้างโฟลเดอร์ถ้ายังไม่มี
@@ -36,10 +37,23 @@ for filename in os.listdir(source_dir):
             if not os.path.exists(target_folder):
                 os.makedirs(target_folder)
 
+            # ป้องกันบันทึกไฟล์ทับกัน
+            base_name = os.path.splitext(filename)[0]
+            new_filename = filename
+            counter = 1
+
+            while os.path.exists(os.path.join(target_folder, new_filename)):
+                new_filename = f"{base_name}({counter}){file_ext}"
+                counter += 1
+
+            destination_path = os.path.join(target_folder, new_filename)
+
             # ย้ายไฟล์
-            shutil.move(file_path, os.path.join(target_folder, filename))
-            
-            print(f"Would move {filename}")
-            print(f"Moved: {filename} to {folder}")
-            
+            try: 
+                shutil.move(file_path, destination_path)
+                print(f"Moved: {filename} -> {folder}/{new_filename}")
+            except Exception as e:
+                print(f"Error moving file {filename}: {e}")
+
+            moved = True
             break
